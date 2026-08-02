@@ -1,0 +1,94 @@
+<header>
+  <a href="/">TaskHub</a>
+
+  <nav aria-label="主导航">
+    <ul>
+      <li><a href="/projects">项目</a></li>
+      <li><a href="/tasks">任务</a></li>
+    </ul>
+  </nav>
+</header>
+
+<main>
+  <header>
+    <h1>任务管理</h1>
+    <p>创建并管理当前项目的任务。</p>
+  </header>
+
+  <section aria-labelledby="create-task-heading">
+    <h2 id="create-task-heading">创建任务</h2>
+
+    <form action="/tasks" method="post">
+      <div>
+        <label for="title">任务标题</label>
+        <input
+          id="title"
+          name="title"
+          type="text"
+          required
+          minlength="2"
+          maxlength="100"
+        />
+      </div>
+
+      <div>
+        <label for="priority">优先级</label>
+        <select id="priority" name="priority">
+          <option value="low">低</option>
+          <option value="medium">中</option>
+          <option value="high">高</option>
+        </select>
+      </div>
+
+      <div>
+        <label for="description">任务描述</label>
+        <textarea
+          id="description"
+          name="description"
+          rows="5"
+        ></textarea>
+      </div>
+
+      <button type="submit">创建任务</button>
+      <button type="reset">清空</button>
+    </form>
+  </section>
+
+  <section aria-labelledby="task-list-heading">
+    <h2 id="task-list-heading">任务列表</h2>
+
+    <ul>
+      <li>
+        <article>
+          <h3>
+            <a href="/tasks/1">完成登录页面</a>
+          </h3>
+
+          <p>优先级：高</p>
+          <p>状态：进行中</p>
+
+          <button type="button">标记为完成</button>
+          <button type="button">删除任务</button>
+        </article>
+      </li>
+
+      <li>
+        <article>
+          <h3>
+            <a href="/tasks/2">实现项目接口</a>
+          </h3>
+
+          <p>优先级：中</p>
+          <p>状态：待处理</p>
+
+          <button type="button">开始任务</button>
+          <button type="button">删除任务</button>
+        </article>
+      </li>
+    </ul>
+  </section>
+</main>
+
+<footer>
+  <p>TaskHub</p>
+</footer>
