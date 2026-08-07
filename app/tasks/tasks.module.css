@@ -112,7 +112,8 @@
 
 .toolbar input,
 .toolbar select,
-.taskForm input {
+.taskForm input,
+.taskForm select {
   min-height: 42px;
   padding: 8px 10px;
   border: 1px solid #aab4bf;
@@ -150,7 +151,8 @@
 .textButton:focus-visible,
 .toolbar input:focus-visible,
 .toolbar select:focus-visible,
-.taskForm input:focus-visible {
+.taskForm input:focus-visible,
+.taskForm select:focus-visible {
   outline: 3px solid #b9dfd4;
   outline-offset: 2px;
 }

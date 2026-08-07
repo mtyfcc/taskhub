@@ -12,6 +12,7 @@ type Task = {
   title: string;
   description: string;
   status: Status;
+  dueDate: string;
   priority: "高" | "中" | "低";
 };
 
@@ -21,6 +22,7 @@ const initialTasks: Task[] = [
     title: "完成登录页面",
     description: "实现登录表单和基本响应式布局。",
     status: "doing",
+    dueDate: "2026-08-09",
     priority: "高",
   },
   {
@@ -28,6 +30,7 @@ const initialTasks: Task[] = [
     title: "设计项目列表",
     description: "整理项目卡片需要展示的信息。",
     status: "todo",
+    dueDate: "2026-08-12",
     priority: "中",
   },
   {
@@ -35,6 +38,7 @@ const initialTasks: Task[] = [
     title: "学习 Git 分支",
     description: "使用功能分支完成一次完整提交。",
     status: "done",
+    dueDate: "2026-08-05",
     priority: "低",
   },
 ];
@@ -50,20 +54,22 @@ const statusOptions: Status[] = ["todo", "doing", "done"];
 function TaskForm({
   onAdd,
 }: {
-  onAdd: (title: string, description: string, status: Status) => void;
+  onAdd: (title: string, description: string, status: Status, dueDate: string) => void;
 }) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [status, setStatus] = useState<Status>("todo");
+  const [dueDate, setDueDate] = useState("");
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!title.trim()) return;
 
-    onAdd(title, description, status);
+    onAdd(title, description, status, dueDate);
     setTitle("");
     setDescription("");
     setStatus("todo");
+    setDueDate("");
   }
 
   return (
@@ -94,6 +100,14 @@ function TaskForm({
             </option>
           ))}
         </select>
+      </label>
+      <label>
+        截止日期
+        <input
+          type="date"
+          value={dueDate}
+          onChange={(event) => setDueDate(event.target.value)}
+        />
       </label>
       <button className={styles.primaryButton} type="submit">
         添加任务
@@ -149,6 +163,7 @@ function TaskItem({
 
         <footer className={styles.taskFooter}>
           <p>优先级：{task.priority}</p>
+          <p>截止日期：{task.dueDate || "未设置"}</p>
           <button className={styles.textButton} onClick={() => onDelete(task.id)} type="button">
             删除
           </button>
@@ -178,7 +193,7 @@ export default function TasksPage() {
     });
   }, [filter, keyword, tasks]);
 
-  function addTask(title: string, description: string, status: Status) {
+  function addTask(title: string, description: string, status: Status, dueDate: string) {
     setTasks((currentTasks) => [
       ...currentTasks,
       {
@@ -186,6 +201,7 @@ export default function TasksPage() {
         title: title.trim(),
         description: description.trim(),
         status,
+        dueDate,
         priority: "中",
       },
     ]);
