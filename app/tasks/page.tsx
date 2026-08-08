@@ -237,6 +237,9 @@ export default function TasksPage() {
         <nav aria-label="主导航">
           <ul className={styles.navigation}>
             <li>
+              <Link href="/projects">项目</Link>
+            </li>
+            <li>
               <Link href="/tasks">任务</Link>
             </li>
             <li>
