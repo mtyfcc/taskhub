@@ -148,6 +148,7 @@
 }
 
 .primaryButton:focus-visible,
+.dangerButton:focus-visible,
 .textButton:focus-visible,
 .toolbar input:focus-visible,
 .toolbar select:focus-visible,
@@ -251,6 +252,41 @@
   border-top: 1px solid #e8edf2;
 }
 
+.deleteConfirmation {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid #f0d1d1;
+  color: #7f1d1d;
+  font-size: 0.9rem;
+}
+
+.confirmationActions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex: none;
+}
+
+.dangerButton {
+  min-height: 36px;
+  padding: 7px 12px;
+  border: 1px solid #a33a3a;
+  border-radius: 4px;
+  color: white;
+  background: #a33a3a;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.dangerButton:hover {
+  background: #842f2f;
+}
+
 .taskFooter p {
   color: #5d6670;
   font-size: 0.9rem;
@@ -289,7 +325,8 @@
   .siteHeader,
   .pageHeader,
   .taskHeader,
-  .taskFooter {
+  .taskFooter,
+  .deleteConfirmation {
     align-items: stretch;
     flex-direction: column;
   }

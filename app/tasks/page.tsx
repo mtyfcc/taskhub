@@ -63,7 +63,10 @@ function TaskForm({
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!title.trim()) return;
+
+    if (!title.trim()) {
+      return;
+    }
 
     onAdd(title, description, status, dueDate);
     setTitle("");
@@ -118,14 +121,20 @@ function TaskForm({
 
 function TaskItem({
   task,
+  isConfirmingDelete,
   onToggle,
   onStatusChange,
-  onDelete,
+  onRequestDelete,
+  onCancelDelete,
+  onConfirmDelete,
 }: {
   task: Task;
+  isConfirmingDelete: boolean;
   onToggle: (id: number) => void;
   onStatusChange: (id: number, status: Status) => void;
-  onDelete: (id: number) => void;
+  onRequestDelete: (id: number) => void;
+  onCancelDelete: () => void;
+  onConfirmDelete: (id: number) => void;
 }) {
   return (
     <li>
@@ -164,10 +173,32 @@ function TaskItem({
         <footer className={styles.taskFooter}>
           <p>优先级：{task.priority}</p>
           <p>截止日期：{task.dueDate || "未设置"}</p>
-          <button className={styles.textButton} onClick={() => onDelete(task.id)} type="button">
+          <button
+            className={styles.textButton}
+            onClick={() => onRequestDelete(task.id)}
+            type="button"
+          >
             删除
           </button>
         </footer>
+
+        {isConfirmingDelete && (
+          <div className={styles.deleteConfirmation} role="alert">
+            <span>确定要删除“{task.title}”吗？</span>
+            <div className={styles.confirmationActions}>
+              <button className={styles.textButton} onClick={onCancelDelete} type="button">
+                取消
+              </button>
+              <button
+                className={styles.dangerButton}
+                onClick={() => onConfirmDelete(task.id)}
+                type="button"
+              >
+                确认删除
+              </button>
+            </div>
+          </div>
+        )}
       </article>
     </li>
   );
@@ -178,6 +209,7 @@ export default function TasksPage() {
   const [filter, setFilter] = useState<Filter>("all");
   const [keyword, setKeyword] = useState("");
   const [showForm, setShowForm] = useState(false);
+  const [pendingDeleteId, setPendingDeleteId] = useState<number | null>(null);
 
   const visibleTasks = useMemo(() => {
     const normalizedKeyword = keyword.trim().toLocaleLowerCase();
@@ -224,8 +256,13 @@ export default function TasksPage() {
     );
   }
 
+  function requestDelete(id: number) {
+    setPendingDeleteId(id);
+  }
+
   function deleteTask(id: number) {
     setTasks((currentTasks) => currentTasks.filter((task) => task.id !== id));
+    setPendingDeleteId(null);
   }
 
   return (
@@ -304,9 +341,12 @@ export default function TasksPage() {
                 <TaskItem
                   key={task.id}
                   task={task}
+                  isConfirmingDelete={pendingDeleteId === task.id}
                   onToggle={toggleTask}
                   onStatusChange={changeTaskStatus}
-                  onDelete={deleteTask}
+                  onRequestDelete={requestDelete}
+                  onCancelDelete={() => setPendingDeleteId(null)}
+                  onConfirmDelete={deleteTask}
                 />
               ))}
             </ul>
