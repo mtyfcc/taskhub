@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { CSSProperties } from "react";
 import styles from "./projects.module.css";
 
 export type ProjectStatus = "active" | "paused" | "archived";
@@ -20,7 +21,13 @@ const statusLabels: Record<ProjectStatus, string> = {
   archived: "已归档",
 };
 
-export function ProjectItem({ project }: { project: Project }) {
+export function ProjectItem({
+  project,
+  onEdit,
+}: {
+  project: Project;
+  onEdit: (project: Project) => void;
+}) {
   const progress =
     project.taskCount === 0
       ? 0
@@ -30,7 +37,7 @@ export function ProjectItem({ project }: { project: Project }) {
     <li>
       <article
         className={styles.projectCard}
-        style={{ "--project-accent": project.accent } as React.CSSProperties}
+        style={{ "--project-accent": project.accent } as CSSProperties}
       >
         <header>
           <div>
@@ -66,9 +73,18 @@ export function ProjectItem({ project }: { project: Project }) {
 
         <footer className={styles.projectFooter}>
           <p>最近更新：{project.updatedAt}</p>
-          <Link className={styles.projectLink} href="/tasks">
-            查看任务
-          </Link>
+          <div className={styles.projectActions}>
+            <button
+              className={styles.textButton}
+              onClick={() => onEdit(project)}
+              type="button"
+            >
+              编辑
+            </button>
+            <Link className={styles.projectLink} href="/tasks">
+              查看任务
+            </Link>
+          </div>
         </footer>
       </article>
     </li>

@@ -3,7 +3,11 @@
 .navigation,
 .sectionHeading,
 .projectMeta,
-.projectFooter {
+.projectFooter,
+.projectActions,
+.headerActions,
+.formHeader,
+.formActions {
   display: flex;
 }
 
@@ -54,6 +58,8 @@
 
 .pageHeader h1,
 .pageHeader p,
+.formHeader h2,
+.formHeader p,
 .sectionHeading h2,
 .projectCard h3,
 .projectCard p {
@@ -209,6 +215,50 @@
   font-size: 0.82rem;
 }
 
+.headerActions,
+.projectActions {
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.primaryButton,
+.textButton {
+  border: 0;
+  font: inherit;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.primaryButton {
+  min-height: 42px;
+  padding: 0 16px;
+  color: white;
+  background: #176b55;
+}
+
+.primaryButton:hover,
+.primaryButton:focus-visible {
+  background: #0f513f;
+}
+
+.primaryButton:disabled {
+  cursor: not-allowed;
+  background: #8aa99e;
+}
+
+.textButton {
+  padding: 0;
+  color: #176b55;
+  background: transparent;
+}
+
+.textButton:hover,
+.textButton:focus-visible {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
 .projectLink {
   color: #176b55;
   font-weight: 700;
@@ -229,8 +279,99 @@
   text-align: center;
 }
 
+.projectForm {
+  margin-bottom: 28px;
+  padding: 20px;
+  border: 1px solid #d5dde5;
+  background: #f8fafc;
+}
+
+.formHeader {
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.formHeader h2 {
+  color: #102a43;
+  font-size: 1.25rem;
+}
+
+.formHeader p {
+  margin-top: 6px;
+  color: #5d6670;
+}
+
+.formGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.field {
+  display: grid;
+  gap: 7px;
+  color: #334e68;
+  font-size: 0.9rem;
+  font-weight: 800;
+}
+
+.field input,
+.field select,
+.field textarea {
+  width: 100%;
+  min-width: 0;
+  border: 1px solid #bcc7d1;
+  padding: 10px 12px;
+  color: #102a43;
+  background: white;
+  font: inherit;
+  font-weight: 500;
+}
+
+.field textarea {
+  resize: vertical;
+}
+
+.field input[type="color"] {
+  width: 64px;
+  height: 42px;
+  padding: 4px;
+}
+
+.field input:disabled,
+.field select:disabled,
+.field textarea:disabled {
+  color: #7b8794;
+  background: #edf2f7;
+  cursor: not-allowed;
+}
+
+.field input[aria-invalid="true"],
+.field textarea[aria-invalid="true"] {
+  border-color: #b42318;
+}
+
+.fullWidth {
+  grid-column: 1 / -1;
+}
+
+.errorMessage {
+  color: #b42318;
+  font-size: 0.82rem;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.formActions {
+  justify-content: flex-end;
+  margin-top: 18px;
+}
+
 @media (max-width: 700px) {
-  .projectList {
+  .projectList,
+  .formGrid {
     grid-template-columns: 1fr;
   }
 }
@@ -238,7 +379,8 @@
 @media (max-width: 640px) {
   .siteHeader,
   .pageHeader,
-  .projectFooter {
+  .projectFooter,
+  .formHeader {
     align-items: stretch;
     flex-direction: column;
   }
