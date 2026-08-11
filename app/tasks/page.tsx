@@ -2,52 +2,16 @@
 
 import Link from "next/link";
 import { FormEvent, useMemo, useState } from "react";
+import {
+  taskStatusLabels,
+  tasks as initialTasks,
+  type Task,
+  type TaskStatus,
+} from "@/app/data";
 import styles from "./tasks.module.css";
 
-type Status = "todo" | "doing" | "done";
+type Status = TaskStatus;
 type Filter = "all" | Status;
-
-type Task = {
-  id: number;
-  title: string;
-  description: string;
-  status: Status;
-  dueDate: string;
-  priority: "高" | "中" | "低";
-};
-
-const initialTasks: Task[] = [
-  {
-    id: 1,
-    title: "完成登录页面",
-    description: "实现登录表单和基本响应式布局。",
-    status: "doing",
-    dueDate: "2026-08-09",
-    priority: "高",
-  },
-  {
-    id: 2,
-    title: "设计项目列表",
-    description: "整理项目卡片需要展示的信息。",
-    status: "todo",
-    dueDate: "2026-08-12",
-    priority: "中",
-  },
-  {
-    id: 3,
-    title: "学习 Git 分支",
-    description: "使用功能分支完成一次完整提交。",
-    status: "done",
-    dueDate: "2026-08-05",
-    priority: "低",
-  },
-];
-
-const statusLabels: Record<Status, string> = {
-  todo: "待处理",
-  doing: "进行中",
-  done: "已完成",
-};
 
 const statusOptions: Status[] = ["todo", "doing", "done"];
 
@@ -99,7 +63,7 @@ function TaskForm({
         <select value={status} onChange={(event) => setStatus(event.target.value as Status)}>
           {statusOptions.map((option) => (
             <option key={option} value={option}>
-              {statusLabels[option]}
+              {taskStatusLabels[option]}
             </option>
           ))}
         </select>
@@ -163,7 +127,7 @@ function TaskItem({
             >
               {statusOptions.map((option) => (
                 <option key={option} value={option}>
-                  {statusLabels[option]}
+                  {taskStatusLabels[option]}
                 </option>
               ))}
             </select>
@@ -173,6 +137,9 @@ function TaskItem({
         <footer className={styles.taskFooter}>
           <p>优先级：{task.priority}</p>
           <p>截止日期：{task.dueDate || "未设置"}</p>
+          <Link className={styles.detailLink} href={`/tasks/${task.id}`}>
+            查看详情
+          </Link>
           <button
             className={styles.textButton}
             onClick={() => onRequestDelete(task.id)}
@@ -230,11 +197,13 @@ export default function TasksPage() {
       ...currentTasks,
       {
         id: Date.now(),
+        projectId: 1,
         title: title.trim(),
         description: description.trim(),
         status,
         dueDate,
         priority: "中",
+        assignee: "我",
       },
     ]);
     setShowForm(false);
@@ -313,7 +282,7 @@ export default function TasksPage() {
                 <option value="all">全部</option>
                 {statusOptions.map((option) => (
                   <option key={option} value={option}>
-                    {statusLabels[option]}
+                    {taskStatusLabels[option]}
                   </option>
                 ))}
               </select>

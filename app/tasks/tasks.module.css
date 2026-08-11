@@ -301,6 +301,75 @@
   cursor: pointer;
 }
 
+.detailLink {
+  color: #176b55;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.detailLink:hover,
+.detailLink:focus-visible {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.detailPanel {
+  margin-top: 18px;
+  padding: 24px;
+  border: 1px solid #d5dde5;
+  border-left: 4px solid #176b55;
+  background: white;
+}
+
+.detailHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.detailHeader h1,
+.detailHeader p {
+  margin: 0;
+}
+
+.detailHeader h1 {
+  color: #102a43;
+  font-size: clamp(2rem, 4vw, 3rem);
+}
+
+.detailHeader p:not(.eyebrow) {
+  margin-top: 10px;
+  color: #5d6670;
+  line-height: 1.7;
+}
+
+.detailGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin: 24px 0 0;
+}
+
+.detailGrid div {
+  min-width: 0;
+  padding: 14px;
+  border: 1px solid #e8edf2;
+  background: #f8fafc;
+}
+
+.detailGrid dt {
+  color: #5d6670;
+  font-size: 0.82rem;
+}
+
+.detailGrid dd {
+  margin: 6px 0 0;
+  color: #102a43;
+  font-weight: 800;
+  overflow-wrap: anywhere;
+}
+
 .emptyState {
   padding: 24px;
   border: 1px dashed #aab4bf;
@@ -326,7 +395,8 @@
   .pageHeader,
   .taskHeader,
   .taskFooter,
-  .deleteConfirmation {
+  .deleteConfirmation,
+  .detailHeader {
     align-items: stretch;
     flex-direction: column;
   }
@@ -351,5 +421,9 @@
   .pageHeader .primaryButton,
   .taskForm .primaryButton {
     width: 100%;
+  }
+
+  .detailGrid {
+    grid-template-columns: 1fr;
   }
 }

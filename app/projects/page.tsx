@@ -2,7 +2,12 @@
 
 import Link from "next/link";
 import { FormEvent, useRef, useState } from "react";
-import { Project, ProjectItem } from "./ProjectItem";
+import {
+  projectStatusLabels,
+  projects as initialProjects,
+  type Project,
+} from "@/app/data";
+import { ProjectItem } from "./ProjectItem";
 import styles from "./projects.module.css";
 
 type ProjectFormData = {
@@ -17,55 +22,6 @@ type ProjectFormData = {
 type ProjectFormErrors = Partial<Record<keyof ProjectFormData, string>>;
 
 const projectStatuses: Project["status"][] = ["active", "paused", "archived"];
-
-const statusLabels: Record<Project["status"], string> = {
-  active: "进行中",
-  paused: "已暂停",
-  archived: "已归档",
-};
-
-const initialProjects: Project[] = [
-  {
-    id: 1,
-    name: "TaskHub 产品迭代",
-    description: "完善任务管理、项目协作和团队工作流。",
-    status: "active",
-    taskCount: 12,
-    completedTaskCount: 7,
-    updatedAt: "今天 09:30",
-    accent: "#176b55",
-  },
-  {
-    id: 2,
-    name: "营销官网重构",
-    description: "重新梳理页面结构、品牌内容和移动端体验。",
-    status: "active",
-    taskCount: 8,
-    completedTaskCount: 3,
-    updatedAt: "昨天 16:20",
-    accent: "#0d5aa7",
-  },
-  {
-    id: 3,
-    name: "用户研究计划",
-    description: "收集用户反馈，整理访谈记录并输出研究结论。",
-    status: "paused",
-    taskCount: 6,
-    completedTaskCount: 2,
-    updatedAt: "2026-08-05",
-    accent: "#b56b00",
-  },
-  {
-    id: 4,
-    name: "旧版数据迁移",
-    description: "将历史项目和任务数据迁移到新的工作区。",
-    status: "archived",
-    taskCount: 10,
-    completedTaskCount: 10,
-    updatedAt: "2026-07-28",
-    accent: "#52606d",
-  },
-];
 
 const emptyForm: ProjectFormData = {
   name: "",
@@ -220,7 +176,7 @@ function ProjectForm({
           >
             {projectStatuses.map((status) => (
               <option key={status} value={status}>
-                {statusLabels[status]}
+                {projectStatusLabels[status]}
               </option>
             ))}
           </select>
@@ -347,6 +303,8 @@ export default function ProjectsPage() {
       completedTaskCount: Number(form.completedTaskCount),
       accent: form.accent,
       updatedAt: getCurrentTimeLabel(),
+      owner: editingProject?.owner ?? "我",
+      deadline: editingProject?.deadline ?? "未设置",
     };
 
     setProjects((currentProjects) => {

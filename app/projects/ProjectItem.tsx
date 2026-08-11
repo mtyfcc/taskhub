@@ -1,25 +1,7 @@
 import Link from "next/link";
 import type { CSSProperties } from "react";
+import { projectStatusLabels, type Project } from "@/app/data";
 import styles from "./projects.module.css";
-
-export type ProjectStatus = "active" | "paused" | "archived";
-
-export type Project = {
-  id: number;
-  name: string;
-  description: string;
-  status: ProjectStatus;
-  taskCount: number;
-  completedTaskCount: number;
-  updatedAt: string;
-  accent: string;
-};
-
-const statusLabels: Record<ProjectStatus, string> = {
-  active: "进行中",
-  paused: "已暂停",
-  archived: "已归档",
-};
 
 export function ProjectItem({
   project,
@@ -45,7 +27,7 @@ export function ProjectItem({
             <p className={styles.projectDescription}>{project.description}</p>
           </div>
           <span className={`${styles.status} ${styles[project.status]}`}>
-            {statusLabels[project.status]}
+            {projectStatusLabels[project.status]}
           </span>
         </header>
 
@@ -81,8 +63,8 @@ export function ProjectItem({
             >
               编辑
             </button>
-            <Link className={styles.projectLink} href="/tasks">
-              查看任务
+            <Link className={styles.projectLink} href={`/projects/${project.id}`}>
+              查看详情
             </Link>
           </div>
         </footer>
