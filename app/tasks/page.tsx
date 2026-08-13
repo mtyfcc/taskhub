@@ -1,10 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
 import {
   taskStatusLabels,
-  tasks as initialTasks,
   type Task,
   type TaskStatus,
 } from "@/app/data";
@@ -172,11 +171,76 @@ function TaskItem({
 }
 
 export default function TasksPage() {
-  const [tasks, setTasks] = useState(initialTasks);
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [filter, setFilter] = useState<Filter>("all");
   const [keyword, setKeyword] = useState("");
   const [showForm, setShowForm] = useState(false);
   const [pendingDeleteId, setPendingDeleteId] = useState<number | null>(null);
+
+  function getTasksEndpoint() {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get("simulateError") === "1") {
+        return "/api/tasks?fail=1";
+      }
+    }
+
+    return "/api/tasks";
+  }
+
+  async function loadTasks() {
+    try {
+      setIsLoading(true);
+      setErrorMessage(null);
+
+      const response = await fetch(getTasksEndpoint());
+      if (!response.ok) {
+        throw new Error("任务数据加载失败");
+      }
+
+      const result: { data: Task[] } = await response.json();
+      setTasks(result.data);
+    } catch (error) {
+      setErrorMessage(error instanceof Error ? error.message : "任务数据加载失败");
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function fetchTasks() {
+      try {
+        const response = await fetch(getTasksEndpoint());
+        if (!response.ok) {
+          throw new Error("任务数据加载失败");
+        }
+
+        const result: { data: Task[] } = await response.json();
+        if (!cancelled) {
+          setTasks(result.data);
+          setErrorMessage(null);
+        }
+      } catch (error) {
+        if (!cancelled) {
+          setErrorMessage(error instanceof Error ? error.message : "任务数据加载失败");
+        }
+      } finally {
+        if (!cancelled) {
+          setIsLoading(false);
+        }
+      }
+    }
+
+    void fetchTasks();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const visibleTasks = useMemo(() => {
     const normalizedKeyword = keyword.trim().toLocaleLowerCase();
@@ -304,7 +368,24 @@ export default function TasksPage() {
             <h2 id="task-list-heading">任务列表</h2>
             <span>{visibleTasks.length} 项</span>
           </div>
-          {visibleTasks.length > 0 ? (
+          {isLoading ? (
+            <div aria-live="polite" className={styles.statusState}>
+              <span aria-hidden="true" className={styles.statusSpinner} />
+              <p>正在加载任务数据...</p>
+            </div>
+          ) : errorMessage ? (
+            <div aria-live="assertive" className={styles.statusState} role="alert">
+              <p>{errorMessage}</p>
+              <button
+                className={styles.textButton}
+                disabled={isLoading}
+                onClick={() => void loadTasks()}
+                type="button"
+              >
+                重试
+              </button>
+            </div>
+          ) : visibleTasks.length > 0 ? (
             <ul className={styles.taskList}>
               {visibleTasks.map((task) => (
                 <TaskItem
@@ -320,7 +401,9 @@ export default function TasksPage() {
               ))}
             </ul>
           ) : (
-            <p className={styles.emptyState}>没有符合筛选条件的任务。</p>
+            <div aria-live="polite" className={styles.statusState}>
+              <p>没有符合筛选条件的任务。</p>
+            </div>
           )}
         </section>
       </main>

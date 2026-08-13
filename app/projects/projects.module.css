@@ -394,6 +394,36 @@
   text-align: center;
 }
 
+.statusState {
+  display: grid;
+  justify-items: center;
+  gap: 12px;
+  padding: 28px 24px;
+  border: 1px dashed #aab4bf;
+  color: #5d6670;
+  background: white;
+  text-align: center;
+}
+
+.statusState p {
+  margin: 0;
+}
+
+.statusSpinner {
+  width: 24px;
+  height: 24px;
+  border: 3px solid #d9e2ec;
+  border-top-color: #176b55;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 .projectForm {
   margin-bottom: 28px;
   padding: 20px;

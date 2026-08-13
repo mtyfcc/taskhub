@@ -1,10 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, useRef, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 import {
   projectStatusLabels,
-  projects as initialProjects,
   type Project,
 } from "@/app/data";
 import { ProjectItem } from "./ProjectItem";
@@ -280,9 +279,74 @@ function ProjectForm({
 }
 
 export default function ProjectsPage() {
-  const [projects, setProjects] = useState(initialProjects);
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [editingProject, setEditingProject] = useState<Project | null>(null);
+
+  function getProjectsEndpoint() {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get("simulateError") === "1") {
+        return "/api/projects?fail=1";
+      }
+    }
+
+    return "/api/projects";
+  }
+
+  async function loadProjects() {
+    try {
+      setIsLoading(true);
+      setErrorMessage(null);
+
+      const response = await fetch(getProjectsEndpoint());
+      if (!response.ok) {
+        throw new Error("项目数据加载失败");
+      }
+
+      const result: { data: Project[] } = await response.json();
+      setProjects(result.data);
+    } catch (error) {
+      setErrorMessage(error instanceof Error ? error.message : "项目数据加载失败");
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function fetchProjects() {
+      try {
+        const response = await fetch(getProjectsEndpoint());
+        if (!response.ok) {
+          throw new Error("项目数据加载失败");
+        }
+
+        const result: { data: Project[] } = await response.json();
+        if (!cancelled) {
+          setProjects(result.data);
+          setErrorMessage(null);
+        }
+      } catch (error) {
+        if (!cancelled) {
+          setErrorMessage(error instanceof Error ? error.message : "项目数据加载失败");
+        }
+      } finally {
+        if (!cancelled) {
+          setIsLoading(false);
+        }
+      }
+    }
+
+    void fetchProjects();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   function openCreateForm() {
     setEditingProject(null);
@@ -384,14 +448,33 @@ export default function ProjectsPage() {
             <span>{projects.length} 个项目</span>
           </div>
 
-          {projects.length > 0 ? (
+          {isLoading ? (
+            <div aria-live="polite" className={styles.statusState}>
+              <span aria-hidden="true" className={styles.statusSpinner} />
+              <p>正在加载项目数据...</p>
+            </div>
+          ) : errorMessage ? (
+            <div aria-live="assertive" className={styles.statusState} role="alert">
+              <p>{errorMessage}</p>
+              <button
+                className={styles.textButton}
+                disabled={isLoading}
+                onClick={() => void loadProjects()}
+                type="button"
+              >
+                重试
+              </button>
+            </div>
+          ) : projects.length > 0 ? (
             <ul className={styles.projectList}>
               {projects.map((project) => (
                 <ProjectItem key={project.id} project={project} onEdit={openEditForm} />
               ))}
             </ul>
           ) : (
-            <p className={styles.emptyState}>还没有项目。</p>
+            <div aria-live="polite" className={styles.statusState}>
+              <p>还没有项目。</p>
+            </div>
           )}
         </section>
       </main>
