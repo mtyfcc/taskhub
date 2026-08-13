@@ -1,69 +1,41 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
+import {
+  taskStatusLabels,
+  type Task,
+  type TaskStatus,
+} from "@/app/data";
 import styles from "./tasks.module.css";
 
-type Status = "todo" | "doing" | "done";
+type Status = TaskStatus;
 type Filter = "all" | Status;
-
-type Task = {
-  id: number;
-  title: string;
-  description: string;
-  status: Status;
-  priority: "高" | "中" | "低";
-};
-
-const initialTasks: Task[] = [
-  {
-    id: 1,
-    title: "完成登录页面",
-    description: "实现登录表单和基本响应式布局。",
-    status: "doing",
-    priority: "高",
-  },
-  {
-    id: 2,
-    title: "设计项目列表",
-    description: "整理项目卡片需要展示的信息。",
-    status: "todo",
-    priority: "中",
-  },
-  {
-    id: 3,
-    title: "学习 Git 分支",
-    description: "使用功能分支完成一次完整提交。",
-    status: "done",
-    priority: "低",
-  },
-];
-
-const statusLabels: Record<Status, string> = {
-  todo: "待处理",
-  doing: "进行中",
-  done: "已完成",
-};
 
 const statusOptions: Status[] = ["todo", "doing", "done"];
 
 function TaskForm({
   onAdd,
 }: {
-  onAdd: (title: string, description: string, status: Status) => void;
+  onAdd: (title: string, description: string, status: Status, dueDate: string) => void;
 }) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [status, setStatus] = useState<Status>("todo");
+  const [dueDate, setDueDate] = useState("");
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!title.trim()) return;
 
-    onAdd(title, description, status);
+    if (!title.trim()) {
+      return;
+    }
+
+    onAdd(title, description, status, dueDate);
     setTitle("");
     setDescription("");
     setStatus("todo");
+    setDueDate("");
   }
 
   return (
@@ -90,10 +62,18 @@ function TaskForm({
         <select value={status} onChange={(event) => setStatus(event.target.value as Status)}>
           {statusOptions.map((option) => (
             <option key={option} value={option}>
-              {statusLabels[option]}
+              {taskStatusLabels[option]}
             </option>
           ))}
         </select>
+      </label>
+      <label>
+        截止日期
+        <input
+          type="date"
+          value={dueDate}
+          onChange={(event) => setDueDate(event.target.value)}
+        />
       </label>
       <button className={styles.primaryButton} type="submit">
         添加任务
@@ -104,14 +84,20 @@ function TaskForm({
 
 function TaskItem({
   task,
+  isConfirmingDelete,
   onToggle,
   onStatusChange,
-  onDelete,
+  onRequestDelete,
+  onCancelDelete,
+  onConfirmDelete,
 }: {
   task: Task;
+  isConfirmingDelete: boolean;
   onToggle: (id: number) => void;
   onStatusChange: (id: number, status: Status) => void;
-  onDelete: (id: number) => void;
+  onRequestDelete: (id: number) => void;
+  onCancelDelete: () => void;
+  onConfirmDelete: (id: number) => void;
 }) {
   return (
     <li>
@@ -140,7 +126,7 @@ function TaskItem({
             >
               {statusOptions.map((option) => (
                 <option key={option} value={option}>
-                  {statusLabels[option]}
+                  {taskStatusLabels[option]}
                 </option>
               ))}
             </select>
@@ -149,20 +135,112 @@ function TaskItem({
 
         <footer className={styles.taskFooter}>
           <p>优先级：{task.priority}</p>
-          <button className={styles.textButton} onClick={() => onDelete(task.id)} type="button">
+          <p>截止日期：{task.dueDate || "未设置"}</p>
+          <Link className={styles.detailLink} href={`/tasks/${task.id}`}>
+            查看详情
+          </Link>
+          <button
+            className={styles.textButton}
+            onClick={() => onRequestDelete(task.id)}
+            type="button"
+          >
             删除
           </button>
         </footer>
+
+        {isConfirmingDelete && (
+          <div className={styles.deleteConfirmation} role="alert">
+            <span>确定要删除“{task.title}”吗？</span>
+            <div className={styles.confirmationActions}>
+              <button className={styles.textButton} onClick={onCancelDelete} type="button">
+                取消
+              </button>
+              <button
+                className={styles.dangerButton}
+                onClick={() => onConfirmDelete(task.id)}
+                type="button"
+              >
+                确认删除
+              </button>
+            </div>
+          </div>
+        )}
       </article>
     </li>
   );
 }
 
 export default function TasksPage() {
-  const [tasks, setTasks] = useState(initialTasks);
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [filter, setFilter] = useState<Filter>("all");
   const [keyword, setKeyword] = useState("");
   const [showForm, setShowForm] = useState(false);
+  const [pendingDeleteId, setPendingDeleteId] = useState<number | null>(null);
+
+  function getTasksEndpoint() {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get("simulateError") === "1") {
+        return "/api/tasks?fail=1";
+      }
+    }
+
+    return "/api/tasks";
+  }
+
+  async function loadTasks() {
+    try {
+      setIsLoading(true);
+      setErrorMessage(null);
+
+      const response = await fetch(getTasksEndpoint());
+      if (!response.ok) {
+        throw new Error("任务数据加载失败");
+      }
+
+      const result: { data: Task[] } = await response.json();
+      setTasks(result.data);
+    } catch (error) {
+      setErrorMessage(error instanceof Error ? error.message : "任务数据加载失败");
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function fetchTasks() {
+      try {
+        const response = await fetch(getTasksEndpoint());
+        if (!response.ok) {
+          throw new Error("任务数据加载失败");
+        }
+
+        const result: { data: Task[] } = await response.json();
+        if (!cancelled) {
+          setTasks(result.data);
+          setErrorMessage(null);
+        }
+      } catch (error) {
+        if (!cancelled) {
+          setErrorMessage(error instanceof Error ? error.message : "任务数据加载失败");
+        }
+      } finally {
+        if (!cancelled) {
+          setIsLoading(false);
+        }
+      }
+    }
+
+    void fetchTasks();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const visibleTasks = useMemo(() => {
     const normalizedKeyword = keyword.trim().toLocaleLowerCase();
@@ -178,15 +256,18 @@ export default function TasksPage() {
     });
   }, [filter, keyword, tasks]);
 
-  function addTask(title: string, description: string, status: Status) {
+  function addTask(title: string, description: string, status: Status, dueDate: string) {
     setTasks((currentTasks) => [
       ...currentTasks,
       {
         id: Date.now(),
+        projectId: 1,
         title: title.trim(),
         description: description.trim(),
         status,
+        dueDate,
         priority: "中",
+        assignee: "我",
       },
     ]);
     setShowForm(false);
@@ -208,8 +289,13 @@ export default function TasksPage() {
     );
   }
 
+  function requestDelete(id: number) {
+    setPendingDeleteId(id);
+  }
+
   function deleteTask(id: number) {
     setTasks((currentTasks) => currentTasks.filter((task) => task.id !== id));
+    setPendingDeleteId(null);
   }
 
   return (
@@ -220,6 +306,9 @@ export default function TasksPage() {
         </Link>
         <nav aria-label="主导航">
           <ul className={styles.navigation}>
+            <li>
+              <Link href="/projects">项目</Link>
+            </li>
             <li>
               <Link href="/tasks">任务</Link>
             </li>
@@ -257,7 +346,7 @@ export default function TasksPage() {
                 <option value="all">全部</option>
                 {statusOptions.map((option) => (
                   <option key={option} value={option}>
-                    {statusLabels[option]}
+                    {taskStatusLabels[option]}
                   </option>
                 ))}
               </select>
@@ -279,20 +368,42 @@ export default function TasksPage() {
             <h2 id="task-list-heading">任务列表</h2>
             <span>{visibleTasks.length} 项</span>
           </div>
-          {visibleTasks.length > 0 ? (
+          {isLoading ? (
+            <div aria-live="polite" className={styles.statusState}>
+              <span aria-hidden="true" className={styles.statusSpinner} />
+              <p>正在加载任务数据...</p>
+            </div>
+          ) : errorMessage ? (
+            <div aria-live="assertive" className={styles.statusState} role="alert">
+              <p>{errorMessage}</p>
+              <button
+                className={styles.textButton}
+                disabled={isLoading}
+                onClick={() => void loadTasks()}
+                type="button"
+              >
+                重试
+              </button>
+            </div>
+          ) : visibleTasks.length > 0 ? (
             <ul className={styles.taskList}>
               {visibleTasks.map((task) => (
                 <TaskItem
                   key={task.id}
                   task={task}
+                  isConfirmingDelete={pendingDeleteId === task.id}
                   onToggle={toggleTask}
                   onStatusChange={changeTaskStatus}
-                  onDelete={deleteTask}
+                  onRequestDelete={requestDelete}
+                  onCancelDelete={() => setPendingDeleteId(null)}
+                  onConfirmDelete={deleteTask}
                 />
               ))}
             </ul>
           ) : (
-            <p className={styles.emptyState}>没有符合筛选条件的任务。</p>
+            <div aria-live="polite" className={styles.statusState}>
+              <p>没有符合筛选条件的任务。</p>
+            </div>
           )}
         </section>
       </main>
