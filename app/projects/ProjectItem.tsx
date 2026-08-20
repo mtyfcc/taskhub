@@ -5,10 +5,14 @@ import styles from "./projects.module.css";
 
 export function ProjectItem({
   project,
+  isDeleting,
   onEdit,
+  onDelete,
 }: {
   project: Project;
+  isDeleting: boolean;
   onEdit: (project: Project) => void;
+  onDelete: (project: Project) => void;
 }) {
   const progress =
     project.taskCount === 0
@@ -58,10 +62,19 @@ export function ProjectItem({
           <div className={styles.projectActions}>
             <button
               className={styles.textButton}
+              disabled={isDeleting}
               onClick={() => onEdit(project)}
               type="button"
             >
               编辑
+            </button>
+            <button
+              className={styles.dangerTextButton}
+              disabled={isDeleting}
+              onClick={() => onDelete(project)}
+              type="button"
+            >
+              {isDeleting ? "删除中..." : "删除"}
             </button>
             <Link className={styles.projectLink} href={`/projects/${project.id}`}>
               查看详情
