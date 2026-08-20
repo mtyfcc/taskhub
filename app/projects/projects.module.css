@@ -262,16 +262,29 @@
   background: #8aa99e;
 }
 
-.textButton {
+.textButton,
+.dangerTextButton {
   padding: 0;
   color: #176b55;
   background: transparent;
 }
 
 .textButton:hover,
-.textButton:focus-visible {
+.textButton:focus-visible,
+.dangerTextButton:hover,
+.dangerTextButton:focus-visible {
   text-decoration: underline;
   text-underline-offset: 4px;
+}
+
+.dangerTextButton {
+  color: #a33a3a;
+}
+
+.textButton:disabled,
+.dangerTextButton:disabled {
+  cursor: not-allowed;
+  color: #7b8794;
 }
 
 .projectLink {
@@ -407,6 +420,14 @@
 
 .statusState p {
   margin: 0;
+}
+
+.requestError {
+  margin: 0 0 14px;
+  padding: 12px;
+  border: 1px solid #f0d1d1;
+  color: #7f1d1d;
+  background: #fff7f7;
 }
 
 .statusSpinner {
