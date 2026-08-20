@@ -45,15 +45,16 @@ function TaskForm({
   const [priority, setPriority] = useState<TaskPriority>("medium");
   const [dueDate, setDueDate] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const selectedProjectId = projectId || String(projects[0]?.id ?? "");
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!title.trim() || !projectId) return;
+    if (!title.trim() || !selectedProjectId) return;
 
     setIsSubmitting(true);
     try {
       await onAdd({
-        projectId: Number(projectId),
+        projectId: Number(selectedProjectId),
         title: title.trim(),
         description: description.trim(),
         priority,
@@ -76,7 +77,7 @@ function TaskForm({
           disabled={isSubmitting || projects.length === 0}
           onChange={(event) => setProjectId(event.target.value)}
           required
-          value={projectId || String(projects[0]?.id ?? "")}
+          value={selectedProjectId}
         >
           {projects.length === 0 ? (
             <option value="">没有可添加任务的进行中项目</option>
