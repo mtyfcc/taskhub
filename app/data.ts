@@ -30,6 +30,15 @@ export type Task = {
   updatedAt: string;
 };
 
+export type Comment = {
+  id: number;
+  taskId: number;
+  author: string;
+  body: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
 export const projectStatusLabels: Record<ProjectStatus, string> = {
   active: "进行中",
   paused: "已暂停",
